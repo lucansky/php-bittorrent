@@ -490,22 +490,13 @@ class Torrent {
     }
 
     /**
-     * Save the current torrent object to the specified filename
+     * Returns encoded torrent file.
      *
-     * This method will save the current object to a file. If the file specified exists it will be
-     * overwritten.
-     *
-     * @param string $filename Path to the torrent file we want to save
-     * @param EncoderInterface $encoder Encoder used to encode the information
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @return Torrent Returns self for a fluent interface
+     * @param EncoderInterface|null $encoder
+     * @return string
      */
-    public function save($filename, EncoderInterface $encoder = null) {
-        if (!is_writable($filename) && !is_writable(dirname($filename))) {
-            throw new InvalidArgumentException('Could not open file "' . $filename . '" for writing.');
-        }
-
+    public function stringDump(EncoderInterface $encoder = null)
+    {
         $announce = $this->getAnnounce();
 
         if (empty($announce)) {
@@ -552,10 +543,28 @@ class Torrent {
         }
 
         // Create the encoded dictionary
-        $dictionary = $encoder->encodeDictionary($torrent);
+        return $encoder->encodeDictionary($torrent);
+    }
+
+    /**
+     * Save the current torrent object to the specified filename
+     *
+     * This method will save the current object to a file. If the file specified exists it will be
+     * overwritten.
+     *
+     * @param string $filename Path to the torrent file we want to save
+     * @param EncoderInterface $encoder Encoder used to encode the information
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @return Torrent Returns self for a fluent interface
+     */
+    public function save($filename, EncoderInterface $encoder = null) {
+        if (!is_writable($filename) && !is_writable(dirname($filename))) {
+            throw new InvalidArgumentException('Could not open file "' . $filename . '" for writing.');
+        }
 
         // Write the encoded data to the file
-        file_put_contents($filename, $dictionary);
+        file_put_contents($filename, $this->stringDump($encoder));
 
         return $this;
     }
